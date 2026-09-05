@@ -15,7 +15,7 @@
   },
   "scripts": {
     "dev": "bun --watch src/index.ts",
-    "build": "bunx buntok build",
+    "build": "bunx buntok build && mkdir -p api && cp .buntok/index.js api/index.js",
     "start": "bun .buntok/index.js",
     "check": "bunx @biomejs/biome check --write .",
     "format": "bunx @biomejs/biome format --write .",
