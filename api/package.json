@@ -14,7 +14,7 @@
     "@buntok/core": "^2.1.6"
   },
   "scripts": {
-    "dev": "bun --watch src/index.ts",
+    "dev": "bun --watch src/server.ts",
     "build": "bunx buntok build",
     "start": "bun .buntok/index.js",
     "check": "bunx @biomejs/biome check --write .",

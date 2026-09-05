@@ -13,4 +13,6 @@ app.get("/", (ctx) => {
   return ctx.json({ message: "Hello from Buntok!" });
 });
 
-app.listen(env.PORT);
+if (process.argv[1]?.endsWith("index.ts") || process.argv[1]?.endsWith("index.js")) {
+  app.listen(env.PORT);
+}
