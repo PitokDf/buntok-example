@@ -3,6 +3,5 @@
   "bunVersion": "1.4",
   "buildCommand": "bun run build",
   "installCommand": "bun install",
-  "devCommand": "bun run dev",
-  "startCommand": "bun .buntok/index.js"
+  "devCommand": "bun run dev"
 }
