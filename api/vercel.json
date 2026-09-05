@@ -1,11 +1,4 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "bunVersion": "1.4.x",
-  "outputDirectory": ".buntok",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/api/main"
-    }
-  ]
+  "bunVersion": "1.4.x"
 }
