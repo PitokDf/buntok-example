@@ -1,15 +1,4 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "bunVersion": "1.4.x",
-  "functions": {
-    ".buntok/index.js": {
-      "runtime": "bun"
-    }
-  },
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": ".buntok/index.js"
-    }
-  ]
+  "bunVersion": "1.4.x"
 }
