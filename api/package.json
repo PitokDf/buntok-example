@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@buntok/core": "^2.1.7"
+    "@buntok/core": "2.1.8-alpha.1"
   },
   "scripts": {
     "dev": "bun --watch server.ts",
