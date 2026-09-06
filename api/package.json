@@ -11,13 +11,14 @@
     "typescript": "^7"
   },
   "dependencies": {
-    "@buntok/core": "^2.1.6"
+    "@buntok/core": "^2.1.7"
   },
   "scripts": {
     "dev": "bun --watch src/server.ts",
     "start": "bun src/server.ts",
     "check": "bunx @biomejs/biome check --write .",
     "format": "bunx @biomejs/biome format --write .",
-    "lint": "bunx @biomejs/biome lint ."
+    "lint": "bunx @biomejs/biome lint .",
+    "build": "bunx buntok build"
   }
 }
