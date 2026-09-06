@@ -1,14 +1,23 @@
 {
-  "dependencies": {
-    "@buntok/core": "2.1.8-alpha.1"
-  },
+  "name": "api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun --watch server.ts",
+    "build": "bunx buntok build",
     "start": "bun .buntok/server.js",
     "check": "bunx @biomejs/biome check --write .",
     "format": "bunx @biomejs/biome format --write .",
-    "lint": "bunx @biomejs/biome lint .",
-    "build": "bunx buntok build"
+    "lint": "bunx @biomejs/biome lint ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@buntok/core": "2.1.8-alpha.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.12"

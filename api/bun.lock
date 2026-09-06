@@ -3,6 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
+      "name": "api",
       "dependencies": {
         "@buntok/core": "2.1.8-alpha.1",
       },
