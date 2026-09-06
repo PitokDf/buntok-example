@@ -4,11 +4,11 @@
   },
   "scripts": {
     "dev": "bun --watch server.ts",
-    "build": "bunx buntok build",
     "start": "bun .buntok/server.js",
     "check": "bunx @biomejs/biome check --write .",
     "format": "bunx @biomejs/biome format --write .",
-    "lint": "bunx @biomejs/biome lint ."
+    "lint": "bunx @biomejs/biome lint .",
+    "build": "bunx buntok build"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.12"
