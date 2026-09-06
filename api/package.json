@@ -1,24 +1,16 @@
 {
-  "name": "api",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
-  "devDependencies": {
-    "@biomejs/biome": "^2.5.12",
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^7"
-  },
   "dependencies": {
     "@buntok/core": "^2.1.7"
   },
   "scripts": {
-    "dev": "bun --watch src/server.ts",
-    "start": "bun src/server.ts",
+    "dev": "bun --watch server.ts",
+    "build": "bunx buntok build",
+    "start": "bun .buntok/server.js",
     "check": "bunx @biomejs/biome check --write .",
     "format": "bunx @biomejs/biome format --write .",
-    "lint": "bunx @biomejs/biome lint .",
-    "build": "bunx buntok build"
+    "lint": "bunx @biomejs/biome lint ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.12"
   }
 }
