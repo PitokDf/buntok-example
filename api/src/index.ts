@@ -1,5 +1,5 @@
 import { App, healthCheck } from "@buntok/core";
-import { env } from "./env";
+// import { env } from "./env";
 
 export const app = new App();
 
