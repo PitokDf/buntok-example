@@ -1,0 +1,7 @@
+node_modules
+dist
+.buntok
+*.log
+.env
+.env.*
+coverage
