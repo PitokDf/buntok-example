@@ -1,8 +1,14 @@
 {
   "name": "api",
   "version": "1.0.0",
-  "description": "",
+  "author": "",
   "main": "server.ts",
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.12"
+  },
+  "description": "",
+  "keywords": [],
+  "license": "ISC",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun --watch server.ts",
@@ -12,14 +18,8 @@
     "format": "bunx @biomejs/biome format --write .",
     "lint": "bunx @biomejs/biome lint ."
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@buntok/core": "^2.1.8"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^2.5.12"
+    "@buntok/core": "^2.1.12"
   }
 }
