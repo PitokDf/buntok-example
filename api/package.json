@@ -20,6 +20,6 @@
   },
   "type": "commonjs",
   "dependencies": {
-    "@buntok/core": "^2.1.12"
+    "@buntok/core": "^2.1.13"
   }
 }
