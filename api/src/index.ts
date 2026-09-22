@@ -1,4 +1,5 @@
-import { App, healthCheck } from "@buntok/core";
+import { App } from "@buntok/core";
+import { healthCheck } from "@buntok/core/middlewares";
 // import { env } from "./env";
 
 export const app = new App();
