@@ -18,7 +18,7 @@
     "format": "bunx @biomejs/biome format --write .",
     "lint": "bunx @biomejs/biome lint ."
   },
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "@buntok/core": "^2.2.0"
   }
