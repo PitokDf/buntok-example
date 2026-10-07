@@ -1,26 +1,83 @@
-import { Dependencies, Controller, Get, Context, Use } from "@buntok/core";
+import {
+	type Context,
+	Controller,
+	Dependencies,
+	deleteCookie,
+	Get,
+	Post,
+	requireAuth,
+	requirePermission,
+	requireRole,
+	setCookie,
+	Use,
+} from "@buntok/core";
+import { zValidator } from "@buntok/core/middlewares/validator";
+import { env } from "@/env";
+import { jwt } from "@/lib/shared";
+import { LoginSchema } from "./auth.schema";
 import { AuthService } from "./auth.service";
-import { z, zValidator } from "@buntok/core/middlewares/validator";
-import { uniq } from "@buntok/core/helpers";
-import { deleteCookie, setCookie } from "@buntok/core/helpers";
 
 @Dependencies(AuthService)
-@Controller("/auths")
+@Controller("/auth")
 export class AuthController {
-  constructor(private authService: AuthService) {}
+	constructor(private authService: AuthService) {}
 
-  @Get()
-  @Use(zValidator("query", z.object({ name: z.string().optional() })))
-  async me() {
-    return (
-      "Hello, this is the auth controller!" +
-      uniq([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-    );
-  }
+	@Post("/login")
+	@Use(zValidator("body", LoginSchema))
+	async login(ctx: Context) {
+		const { email, password } = ctx.valid("body") as { email: string; password: string };
+		const user = await this.authService.login(email, password);
+		const token = await jwt.sign(
+			{ userId: user.id, role: user.role, permissions: user.permissions },
+			3600,
+		);
+		const payload = { token, user, expiresIn: 3600, store: env.AUTH_STORE };
+		if (env.AUTH_STORE === "cookie") {
+			return setCookie(ctx.json(payload), env.AUTH_COOKIE, token, {
+				httpOnly: true,
+				sameSite: "lax",
+				path: "/",
+				maxAge: 3600,
+			});
+		}
+		return ctx.json(payload);
+	}
 
-  @Get("/login")
-  async login(ctx: Context) {
-    const result = await this.authService.login();
-    return ctx.json(result);
-  }
+	@Post("/logout")
+	logout(ctx: Context) {
+		if (env.AUTH_STORE === "cookie") {
+			return deleteCookie(ctx.json({ success: true }), env.AUTH_COOKIE, { path: "/" });
+		}
+		return ctx.json({
+			success: true,
+			note: "header mode: drop the bearer token client-side",
+		});
+	}
+
+	@Get("/me")
+	@Use(requireAuth(env.JWT_SECRET))
+	me(ctx: Context) {
+		return ctx.json({ user: ctx.user });
+	}
+
+	@Get("/admin")
+	@Use(requireAuth(env.JWT_SECRET))
+	@Use(requireRole("admin"))
+	admin(ctx: Context) {
+		return { admin: true, user: ctx.user };
+	}
+
+	@Get("/moderator")
+	@Use(requireAuth(env.JWT_SECRET))
+	@Use(requireRole("admin", "moderator"))
+	moderator(ctx: Context) {
+		return { moderator: true, user: ctx.user };
+	}
+
+	@Get("/delete-user")
+	@Use(requireAuth(env.JWT_SECRET))
+	@Use(requirePermission("users:delete"))
+	deleteUser(ctx: Context) {
+		return { allowed: true, user: ctx.user };
+	}
 }

@@ -1,4 +1,5 @@
-export { AuthService } from "./auth.service";
 export { AuthController } from "./auth.controller";
-export { CreateAuthSchema, UpdateAuthSchema } from "./auth.schema";
-export type { CreateAuthInput, UpdateAuthInput } from "./auth.schema";
+export type { LoginInput } from "./auth.schema";
+export { LoginSchema } from "./auth.schema";
+export type { AuthUser, SafeAuthUser } from "./auth.service";
+export { AuthService } from "./auth.service";
