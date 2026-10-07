@@ -1,28 +1,28 @@
 {
-  "name": "api",
-  "version": "1.0.0",
-  "author": "",
-  "main": "server.ts",
-  "devDependencies": {
-    "@biomejs/biome": "^2.5.12",
-    "@types/bun": "latest",
-    "typescript": "^7"
-  },
-  "description": "",
-  "keywords": [],
-  "license": "ISC",
-  "private": true,
-  "scripts": {
-    "dev": "bun --watch server.ts",
-    "build": "bunx buntok build",
-    "start": "bun .buntok/server.js",
-    "check": "bunx @biomejs/biome check --write .",
-    "format": "bunx @biomejs/biome format --write .",
-    "lint": "bunx @biomejs/biome lint .",
-    "test": "bun test"
-  },
-  "type": "module",
-  "dependencies": {
-    "@buntok/core": "file:./buntok-core-2.2.4.tgz"
-  }
+	"name": "api",
+	"version": "1.0.0",
+	"author": "",
+	"main": "server.ts",
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.12",
+		"@types/bun": "latest",
+		"typescript": "^5"
+	},
+	"description": "",
+	"keywords": [],
+	"license": "ISC",
+	"private": true,
+	"scripts": {
+		"dev": "bun --watch server.ts",
+		"build": "bunx buntok build",
+		"start": "bun .buntok/server.js",
+		"check": "bunx @biomejs/biome check --write .",
+		"format": "bunx @biomejs/biome format --write .",
+		"lint": "bunx @biomejs/biome lint .",
+		"test": "bun test"
+	},
+	"type": "module",
+	"dependencies": {
+		"@buntok/core": "file:./buntok-core-2.2.4.tgz"
+	}
 }
