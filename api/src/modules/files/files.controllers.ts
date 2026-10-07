@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import {
 	type Context,
 	Controller,
@@ -14,6 +15,7 @@ import {
 } from "@buntok/core";
 import type { UploadedFile } from "@buntok/core/upload";
 import { LocalDiskStorage, uploader } from "@buntok/core/upload";
+import { publicDir } from "@/lib/shared";
 
 const sampleRows = [
 	{ id: 1, name: "Ada", role: "admin" },
@@ -25,19 +27,19 @@ const sampleRows = [
 export class FilesController {
 	@Get("/sample")
 	sample() {
-		return file("./public/sample.txt");
+		return file(join(publicDir, "sample.txt"));
 	}
 
 	@Get("/fallback")
 	fallback(ctx: Context) {
-		return serveFileOrFallback(ctx, "./public/missing.txt", () =>
+		return serveFileOrFallback(ctx, join(publicDir, "missing.txt"), () =>
 			ctx.json({ fallback: true, message: "File not found, fallback used" }, 404),
 		);
 	}
 
 	@Get("/download")
 	download(ctx: Context) {
-		return downloadFile(ctx, "./public/sample.txt", "sample.txt");
+		return downloadFile(ctx, join(publicDir, "sample.txt"), "sample.txt");
 	}
 
 	@Get("/buffer")
