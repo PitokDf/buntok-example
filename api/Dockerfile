@@ -16,7 +16,7 @@ RUN bunx buntok build
 FROM docker.io/oven/bun:1-alpine
 WORKDIR /app
 
-COPY --from=builder /app/.buntok .buntok
+COPY --from=builder /app/buntok buntok
 COPY --from=builder /app/node_modules node_modules
 COPY --from=builder /app/package.json ./
 
@@ -25,4 +25,4 @@ EXPOSE 1212
 ENV NODE_ENV=production
 ENV PORT=1212
 
-CMD ["bun", ".buntok/server.js"]
+CMD ["bun", "buntok/server.js"]

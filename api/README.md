@@ -21,7 +21,7 @@ Other commands:
 bun run test       # bun test (43 in-process tests via app.request)
 bun run check      # biome check --write
 bunx tsc --noEmit  # typecheck
-bun run build      # buntok build (production bundle in .buntok/)
+bun run build      # buntok build (production bundle in buntok/)
 bun run start      # run the production bundle
 ```
 

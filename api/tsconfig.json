@@ -23,5 +23,5 @@
 		}
 	},
 	"include": ["src/**/*", "tests/**/*", "server.ts"],
-	"exclude": ["node_modules", ".buntok", "buntok"]
+	"exclude": ["node_modules", "buntok"]
 }

@@ -6,7 +6,7 @@
 	},
 	"files": {
 		"ignoreUnknown": true,
-		"includes": ["**", "!**/node_modules", "!**/dist", "!**/.buntok", "!**/buntok", "!**/coverage"]
+		"includes": ["**", "!**/node_modules", "!**/dist", "!**/buntok", "!**/coverage"]
 	},
 	"formatter": {
 		"enabled": true,
