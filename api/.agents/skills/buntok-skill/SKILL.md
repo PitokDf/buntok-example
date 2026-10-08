@@ -55,10 +55,11 @@ bunx buntok init                 # interactive setup - generates all boilerplate
 
 `buntok init` generates the full project scaffold:
 - Copies `SKILL.md` → `.agents/skills/buntok-skill/SKILL.md`
+- Installs `@buntok/core`, the TypeScript toolchain (`typescript`, `@types/bun`, `@types/node`), and `@biomejs/biome` (any of them skipped when already present or when `BUNTOK_NO_AUTO_INSTALL=1`)
 - Updates `package.json` scripts: `dev`, `build`, `start`, `check`, `format`, `lint`
 - Generates `tsconfig.json` (bundler, strict, `@/*` → `./src/*`, ESNext), `biome.json`, `.vscode/settings.json`
 - Creates `src/index.ts` (Hello Buntok + `export const app`) and `src/env.ts` (`Buntok.validateEnv` for `PORT`, `AUTH_STORE`, `AUTH_COOKIE`, `NODE_ENV`)
-- Creates `server.ts` (build entry point - `app.listen(env.PORT)`)
+- Creates `server.ts` (build entry point - re-exports `app`, then `app.listen(env.PORT)`)
 - Creates `.env` / `.env.example` (`PORT=1212`, `AUTH_STORE=header`, `AUTH_COOKIE=session`)
 - Creates `.gitignore`, optionally `vercel.json` (prompt: "Do you want to deploy to Vercel?"), optionally `Dockerfile` + `.dockerignore` (prompt: "Do you want to add Docker support?")
 
@@ -81,7 +82,7 @@ bunx buntok init                 # interactive setup - generates all boilerplate
 │   ├── middlewares/          # buntok make:middleware <name>
 │   ├── lib/                  # shared utilities (prisma.ts, db.ts, etc.)
 │   └── config/               # configuration (env.ts)
-├── server.ts                 # local/production Bun entry point - app.listen(env.PORT)
+├── server.ts                 # local/production Bun entry point - re-exports app, app.listen(env.PORT)
 ├── public/docs/swagger.json  # auto-generated on app.listen()
 ├── tests/
 │   ├── *.spec.ts             # buntok make:test <entity>
@@ -93,7 +94,7 @@ bunx buntok init                 # interactive setup - generates all boilerplate
 └── buntok/                   # buntok build output (server.js)
 ```
 
-> `src/index.ts` must export `const app` for `buntok make:docs` and other tooling. The generated `server.ts` calls `app.listen(env.PORT)` for a local or production Bun server. A serverless deployment should expose `app.fetch` through its platform adapter instead of calling `app.listen()`.
+> `src/index.ts` must export `const app` for `buntok make:docs` and other tooling. The generated `server.ts` re-exports `app` and calls `app.listen(env.PORT)` for a local or production Bun server. A serverless deployment should expose `app.fetch` through its platform adapter instead of calling `app.listen()`.
 
 ### 3. Generate code
 
@@ -102,7 +103,7 @@ buntok create user                      # module: repo + service + controller + 
 buntok create user --repo --service     # only repo & service
 buntok create user --controller         # only controller
 buntok create user --schema             # only schema
-buntok create user --drizzle            # use Drizzle ORM (default: auto-detect)
+buntok create user --drizzle            # use Drizzle ORM (default: auto-detect, falls back to plain code)
 buntok create user --prisma             # use Prisma ORM
 buntok create user --typeorm            # use TypeORM
 buntok create user --force              # overwrite files that already exist
@@ -167,11 +168,13 @@ buntok db reset --dry-run                    # preview destructive command
 
 | Command | Args / Flags | Description |
 |---------|--------------|-------------|
+| `buntok --help` | `-h`, `help` | Show usage and exit |
+| `buntok --version` | `-v`, `version` | Show CLI version and exit |
 | `buntok init` | - | Project setup |
 | `buntok dev` | `--expose --port=PORT` | Start dev server (HMR). Watches `.env`/`.env.local`/`.env.development` and auto-restarts on change. `--expose` creates public tunnel via localtunnel |
 | `buntok build` | - | Build to `buntok/` |
 | `buntok check` | `--json --plain` | TypeScript type check with error details and summary |
-| `buntok create <entity>` | `--repo --service --controller --schema --prisma --drizzle --typeorm --dry-run --force --base --fields --app` | Generate module files; `--app <name>` picks the Buntok/group instance that registers the controller |
+| `buntok create <entity>` | `--repo --service --controller --schema --prisma --drizzle --typeorm --dry-run --force --base --fields --app` | Generate module files; ORM auto-detects and falls back to plain code when none is found; `--app <name>` picks the Buntok/group instance that registers the controller |
 | `buntok db <cmd>` | `migrate, seed, reset, generate, studio, status` | ORM delegation (confirmation required for `reset`; local seeders run when the ORM has no seed config) |
 | `buntok debug:routes` | `--json` | Show all registered routes with middleware chains |
 | `buntok make:factory <entity>` | `--dry-run --force --fields` | Generate data factory (`src/factories/<entity>.factory.ts`) |
@@ -230,6 +233,15 @@ const app = new Buntok();
 | `app.all` | `(path, ...handlers)` | Register all methods (GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS) |
 | `app.query` | `(path, ...handlers)` | Register QUERY (RFC 10008) |
 | `app.use` | `(middleware)` | Add global middleware |
+| `app.onRequest` | `(hook)` | Global pre-middleware hook - `RequestHook (ctx) => LifecycleHookResult`; a returned `Response` short-circuits before `use()` and handlers |
+| `app.onBeforeHandle` | `(hook)` | Runs right before route handlers; a returned `Response` short-circuits the handler |
+| `app.onAfterHandle` | `(hook)` | Runs after handlers - `(ctx, res) => Response \| void \| Promise<...>`; return a `Response` to replace |
+| `app.derive` | `(hook)` | Async-ok per-request hook; result merged into `ctx.store` |
+| `app.onStart` | `(hook)` | Fires once when `listen()` succeeds (before the ready callback); errors are logged, not thrown |
+| `app.onStop` | `(hook)` | Fires during `close()` after resources are released; errors are logged |
+| `app.model` | `(name, schema)` / `(record)` | Register schema(s) in the model registry - reference by name in `zValidator`/`zResponse` |
+| `app.getModel` | `(name)` | Get registered schema - throws `Unknown model "name"` if not registered |
+| `app.decorate` | `(key, value)` / `(record)` | Add app-level value to `ctx.di` - returns `Buntok<DI & T>` so the key is typed |
 | `app.cors` | `(options?)` | Configure CORS - ensures CORS headers on ALL responses including errors (4xx, 5xx) |
 | `app.group` | `(prefix)` | Create route group - returns `RouterGroup` with `use()`, `group()`, same HTTP verbs (inherits group middlewares) |
 | `app.static` | `(routePath, directory, options?)` | Serve static files - `StaticOptions {maxAge?, cacheControl?, etag?}`; traversal-safe, `index.html` fallback, ETag `304` |
@@ -305,6 +317,31 @@ app.disable("logger");        // Silence ALL logger output (request logs, error/
                               // after listen() it still silences runtime logging.
 app.enable("logger");         // Re-enable (logger.enabled = true, logger.logRequests = true)
 ```
+
+### Lifecycle Hooks
+
+Pipeline order per request: **`onRequest → use() → derive → onBeforeHandle → handler → onAfterHandle → middleware tail`**. Hooks registered after `listen()` take effect immediately (AOT pipeline recompiled).
+
+```ts
+app.onRequest((ctx) => {
+  if (ctx.request.headers.get("x-key") !== "s3cret") return new Response("forbidden", { status: 403 });
+});
+app.derive(async () => ({ tenant: await resolveTenant() })); // merged into ctx.store
+app.onBeforeHandle((ctx) => {
+  if (!ctx.store.tenant) return new Response("no tenant", { status: 400 });
+});
+app.onAfterHandle((_ctx, res) => {
+  res.headers.set("x-powered-by", "benchmark");
+});
+app.onStart(() => console.log("ready")); // after listen() succeeds, before ready callback
+app.onStop(() => console.log("bye"));    // during close(), after resource cleanup
+
+app.get("/who", (ctx) => ctx.store.tenant); // derive result lives on ctx.store
+```
+
+- `LifecycleHookResult = Response | void | undefined | Promise<...>` - returning a `Response` from `onRequest`/`onBeforeHandle` skips everything after it; from `onAfterHandle` it replaces the response.
+- `app.derive` merges into `ctx.store` (buntok idiom; Elysia merges into the root context). `app.decorate` puts values on `ctx.di` and narrows the type (`app.set` is the runtime equivalent without narrowing).
+- Registering any pipeline hook disables native static-route promotion for that app (all requests flow through the composed pipeline).
 
 ### app.apiDocs()
 
@@ -541,6 +578,8 @@ buntok debug:routes                     # show all registered routes
 buntok debug:routes --json              # output as JSON (for programmatic use)
 ```
 
+The command imports the app entry (`server.ts`, `src/index.ts`, ...), prints the table, and exits - it never keeps the server running (`app.listen()` is suppressed while it runs). The entry must re-export the app (the scaffolded `server.ts` ends with `export { app };`); a listener-only entry fails with `Could not find Buntok instance with routeDebugInfo` and exit code 1.
+
 ### Output
 
 ```
@@ -666,7 +705,7 @@ until the public type is updated.
 | `ctx.getCookie(name)` | `string \| undefined` | Get one cookie (native `request.cookies` or `Cookie` header) |
 | `ctx.getCookies()` | `Record<string, string>` | Get all cookies |
 | `ctx.valid<T>(target)` | `T` | Get data validated by `zValidator` - throws if no validator ran for that target |
-| `ctx.onAfterResponse(hook)` | `void` | Register `hook: (res:Response)=>Response\|undefined` in `ctx._afterHooks` |
+| `ctx.onAfterResponse(hook)` | `void` | Register `hook: (res:Response)=>Response\|undefined` - runs after the response is finalized (post `ctx.set.headers` merge); return a `Response` to apply e.g. custom headers |
 
 ### Response
 
@@ -684,12 +723,13 @@ until the public type is updated.
 | `ctx.htmlStream(generator, options?)` | `Response` | Streaming HTML via async generator - yields chunks progressively |
 | `ctx.sse(callback, options?)` | `Response` | SSE stream |
 
-Response headers can be mutated per-request via `ctx.set.headers`. The map is merged into the final response **after** built-in headers, so user values win (e.g. over `X-Powered-By` and `x-request-id`):
+Response headers can be mutated per-request via `ctx.set.headers` (type `HTTPHeaders` - well-known request/response headers autocomplete, values `string | number` with numbers stringified, `'set-cookie'` accepts `string | string[]` and appends each cookie). The map is merged into the final response **after** built-in headers, so user values win (e.g. over `X-Powered-By` and `x-request-id`):
 
 ```ts
 app.get("/custom-headers", (ctx) => {
   ctx.set.headers["x-powered-by"] = "benchmark";
-  ctx.set.headers["x-a"] = "1";
+  ctx.set.headers["x-a"] = 1; // number → "1"
+  ctx.set.headers["set-cookie"] = ["a=1; Path=/", "b=2; Path=/"];
   return "ok";
 });
 ```
@@ -1033,6 +1073,21 @@ app.get("/users/:id", zValidator("params", idSchema), (ctx) => {
   return ctx.json({ id });
 });
 ```
+
+### Model Registry (string schemas)
+
+Register schemas once with `app.model`, then reference them by name in `zValidator`/`zResponse` (also `validate()`/`validateBody()`/`validateParams()`):
+
+```ts
+app.model("UserBody", z.object({ name: z.string().min(1) }));
+// or app.model({ UserBody: ..., UserIdParams: ... });
+
+app.post("/users", zValidator("body", "UserBody"), (ctx) => ctx.json(ctx.valid("body"), 201));
+
+const schema = app.getModel("UserBody"); // throws if not registered
+```
+
+Names live in a global (module-level) registry - use unique names in tests. Unknown names throw at route registration: `Unknown model "X". Register it with app.model("X", schema) before routes use it.`
 
 ### Body Content-Type Variants
 
@@ -2767,7 +2822,7 @@ console.assert(res.status === 200);
 
 ## Factory (Data Generation)
 
-Type-safe data factories for generating test and seed data. Requires `@faker-js/faker` as optional peer dependency.
+Type-safe data factories for generating test and seed data. Requires `@faker-js/faker` as optional peer dependency; `buntok make:factory` installs it with `bun add -d` when it is missing (skipped when `BUNTOK_NO_AUTO_INSTALL=1`).
 
 ```bash
 buntok make:factory user    # generates a scaffold at src/factories/user.factory.ts
@@ -2776,7 +2831,7 @@ buntok make:factory user --dry-run  # preview without writing
 buntok make:factory user --force    # overwrite an existing factory
 ```
 
-The generator fills the body from the Prisma model (or from `--fields` when there is no schema) and picks the model type import from the detected ORM - non-Prisma projects get an inline type derived from the fields. Replace or extend the generated fields as needed before compiling or using the factory. The `Factory` API itself is ORM-independent.
+The generator fills the body from the Prisma model (or from `--fields` when there is no schema) and picks the model type import from the detected ORM - non-Prisma projects (including projects with no ORM) get an inline type derived from the fields and never import `@prisma/client`. Replace or extend the generated fields as needed before compiling or using the factory. The `Factory` API itself is ORM-independent.
 
 ### Factory API
 
@@ -2998,12 +3053,13 @@ import { app } from "./src/index";
 import { env } from "./src/env";
 
 app.listen(env.PORT);
+export { app };
 ```
 
 ### Why Two Files?
 
 - **`src/index.ts`** exports `app` cleanly - used by `buntok make:docs` (loads it with `BUNTOK_DOCS_BUILD=1`)
-- **`server.ts`** is the local and production Bun server entry point - it calls `app.listen()` which uses `Bun.serve()`
+- **`server.ts`** is the local and production Bun server entry point - it re-exports `app` (so tooling such as `buntok debug:routes` can load it) and calls `app.listen()` which uses `Bun.serve()`
 - A serverless entry point imports the app from `src/index.ts` and exposes `app.fetch`
 
 ### `app.fetch()`
