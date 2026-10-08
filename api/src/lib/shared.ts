@@ -1,12 +1,9 @@
-import { existsSync } from "node:fs";
 import { type AuditLogEntry, Cache, JwtService, MemoryCacheDriver } from "@buntok/core";
 import { Metrics } from "@buntok/core/metrics";
 import { Queue } from "@buntok/core/queue";
 import { MemorySchedulerDriver, Scheduler } from "@buntok/core/schedule";
 import { SSEBroadcaster } from "@buntok/core/sse";
 import { env } from "@/env";
-
-export const publicDir = ["./public", "./api/public"].find((dir) => existsSync(dir)) ?? "./public";
 
 export const jwt = new JwtService(env.JWT_SECRET);
 

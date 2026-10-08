@@ -25,7 +25,6 @@ import {
 	captureAudit,
 	emailQueue,
 	metrics,
-	publicDir,
 	recordProcessedJob,
 	scheduler,
 	scheduleState,
@@ -95,7 +94,7 @@ app.apiDocs({
 	safeOnProduction: false,
 });
 
-app.static("/assets", publicDir);
+app.static("/assets", "./public");
 
 healthCheck(app, {
 	includeUptime: true,
